@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
 
 set(MBED_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
-set(MBED_CONFIG_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.mbedbuild CACHE INTERNAL "")
+set(MBED_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
 set(APP_TARGET mbed-os-example-for-azure)
 
 include(${MBED_PATH}/tools/cmake/app.cmake)
@@ -21,8 +21,6 @@ add_executable(${APP_TARGET})
 
 mbed_configure_app_target(${APP_TARGET})
 
-mbed_set_mbed_target_linker_script(${APP_TARGET})
-
 project(${APP_TARGET})
 
 target_include_directories(${APP_TARGET}
@@ -34,6 +32,13 @@ target_sources(${APP_TARGET}
     PRIVATE
         main.cpp
 )
+
+if("NUVOTON" IN_LIST MBED_TARGET_LABELS)
+    target_sources(${APP_TARGET}
+        PRIVATE
+            targets/TARGET_NUVOTON/platform_entropy.cpp
+    )
+endif()
 
 if("wifi_ism43362" IN_LIST MBED_TARGET_LABELS)
     target_link_libraries(${APP_TARGET}
@@ -48,6 +53,8 @@ target_link_libraries(${APP_TARGET}
         mbed-os
         ntp-client
         mbed-mbedtls
+        mbed-netsocket
+        mbed-wifi
 )
 
 mbed_set_post_build(${APP_TARGET})
